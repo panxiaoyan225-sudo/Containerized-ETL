@@ -125,7 +125,7 @@ Refer to the Docker Compose configuration and project source files for service s
 
 ---
 
-**Engineering principle**
+## Engineering principle
 
 **Reliable intelligence begins with reliable data.**
 
