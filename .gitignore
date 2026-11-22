@@ -29,3 +29,13 @@ __pycache__/
 *.pyc
 venv/
 .env
+
+university_infographic.html
+
+*backup*
+data/bronze
+logs/
+
+*copy*
+
+

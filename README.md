@@ -1,51 +1,133 @@
-# University Intelligence Framework & Automated ETL
-[📊 View ETL Infographic](https://panxiaoyan225-sudo.github.io/university_etl_Docker/university_infographic.html)
 
-Technical implementations of a robust, automated data pipeline designed for high-reliability environments like government and higher education. This framework bridges the gap between architectural agility and statistical rigor through automated data quality (DQ) enforcement and containerized persistence.
+## Data Integration Pipeline : Python · Docker · Apache Airflow · MySQL · Data Quality
 
-## 🎯 Project Philosophy
+An automated, containerized data pipeline that transforms fragmented institutional data into structured, validated, and reusable datasets.
 
-Most analytics workflows suffer from manual data handling. This project demonstrates a **high-performance, low-footprint architecture** optimized for containerized environments. By moving from manual extracts to an automated Medallion Architecture, I achieved a scalable "Single Source of Truth" for university performance metrics while maintaining production-grade reliability.
+Designed around a Canadian higher-education use case, this project demonstrates how API ingestion, data-quality enforcement, historical snapshots, and relational persistence can work together to support reliable institutional reporting and longitudinal analysis.
 
-## 🏗️ System Architecture
+## Architecture Overview
 
-The framework orchestrates data through four specialized layers:
+The pipeline separates data ingestion, validation, persistence, and orchestration so that each stage has a defined responsibility.
 
-1.  **Ingestion Layer:** Multi-protocol support for REST APIs (JSON) with built-in retry logic and exponential backoff to handle network instability.
-2.  **Validation Layer (The Gatekeeper):** A custom suite within `transform.py` that enforces schema integrity and logical consistency (e.g., non-null checks on university domains) before any database commits.
-3.  **Persistence Layer (Bronze & Silver):**
-    * **Bronze:** Raw immutable JSON snapshots stored for auditability and lineage.
-    * **Silver:** Structured relational storage using MySQL with optimized "Upsert" logic to prevent record duplication.
-4.  **Audit & Logging:** A centralized logging system (`logging_config.py`) that tracks row counts, API latency, and transformation errors in real-time.
+```mermaid
+flowchart TB
+    A["External Data Source<br/>Hipo Labs API"] --> B["Extract<br/>Python · REST API · Retry Logic"]
 
-## 🌊 The Pipelines
+    B --> C["BRONZE LAYER<br/>Raw JSON Snapshots<br/>Historical Preservation"]
 
-* **University Intelligence Pipeline:** Consumes nested JSON from the Hipo Labs API, transforming nested lists into optimized, relational SQL tables ready for executive dashboards.
-* **Automated Data Auditor:** Monitors the ingestion process to ensure that only validated records regarding Canadian institutions reach the final persistence layer.
-* **Medallion Snapshot System:** Automatically versions raw data in the `/data/bronze` directory, ensuring historical data is preserved for longitudinal impact evaluations.
+    C --> D["Transform & Validate<br/>Pandas · Schema Checks<br/>Logical Consistency"]
 
-## 🛠️ Tech Stack
+    D -->|Validated records| E["SILVER LAYER<br/>MySQL Relational Tables<br/>SQLAlchemy · Upsert"]
 
-* **Languages:** Python 3.11, SQL
-* **Engineering:** Docker, Docker Compose, SQLAlchemy, Apache Airflow
-* **Data Science:** Pandas (Vectorized transformations)
-* **Environment:** Cross-platform compatibility (Windows/Linux) via Containerization
+    D -->|Validation failures| F["Logging & Error Tracking"]
 
-## 📅 Apache Airflow – Scheduling & Monitoring
+    B --> G["Pipeline Monitoring<br/>Row Counts · API Latency"]
+    D --> G
+    E --> G
 
-The pipeline is scheduled and monitored with Apache Airflow (LocalExecutor + PostgreSQL):
+    H["Apache Airflow<br/>DAG Scheduling & Orchestration"] -.-> B
+    H -.-> D
+    H -.-> E
 
-* **Airflow UI:** `http://localhost:8080` — **Login:** `admin` / `admin`
-* **DAG:** `university_etl` runs **@daily** (extract → transform → load); runs can also be triggered manually.
-* **Services:** `postgres` (Metadata), `airflow-webserver`, `airflow-scheduler`, and `mysql`. The ETL runs inside the scheduler when triggered.
+    I["Docker Compose<br/>Containerized Services"] -.-> H
+    I -.-> E
+    I -.-> J["PostgreSQL<br/>Airflow Metadata"]
+
+    E --> K["Analytics & Reporting<br/>Institutional Performance Data"]
+```
+
+## Engineering Approach
+
+### 1. Automated Ingestion
+
+- Connects to the Hipo Labs API to retrieve nested JSON data.
+- Handles network instability through retry logic and exponential backoff.
+- Separates extraction from downstream transformation to make the workflow easier to maintain.
+
+### 2. Data Quality & Validation
+
+Data quality is enforced before records reach the final relational tables.
+
+- Schema and structural validation.
+- Logical consistency checks, including required institutional attributes.
+- Rejection of records that do not satisfy validation rules.
+- Centralized logging of transformation errors and processing results.
+
+### 3. Medallion Data Architecture
+
+**Bronze — Raw Data Preservation**
+
+- Stores raw JSON snapshots.
+- Preserves source-level information for traceability and historical reference.
+- Supports subsequent reprocessing without requiring another API extraction.
+
+**Silver — Validated Relational Data**
+
+- Transforms nested API responses into structured relational tables.
+- Uses MySQL for persistent storage.
+- Implements SQLAlchemy-based upsert logic to avoid duplicate records during repeated ingestion.
+
+### 4. Orchestration & Containerization
+
+Apache Airflow coordinates the workflow through a scheduled DAG.
+
+- `university_etl` defines the extraction, transformation, and loading sequence.
+- LocalExecutor manages task execution.
+- Docker Compose coordinates the application and supporting services.
+- PostgreSQL stores Airflow metadata, while MySQL holds the institutional data.
+
+## Pipeline Components
+
+| Component | Responsibility |
+|---|---|
+| Python | API extraction and data transformation |
+| Pandas | Structured data processing |
+| SQLAlchemy | Database interaction and upsert operations |
+| MySQL | Persistent institutional data |
+| Apache Airflow | Scheduling and workflow orchestration |
+| PostgreSQL | Airflow metadata storage |
+| Docker & Docker Compose | Reproducible service environment |
+
+## Why This Architecture Matters
+
+Institutional analytics depends on more than the availability of dashboards or analytical models. It depends on the reliability and consistency of the data feeding them.
+
+This architecture addresses several common challenges:
+
+- **Fragmented sources:** consolidates external institutional data into structured relational datasets.
+- **Manual data handling:** automates recurring ingestion and transformation tasks.
+- **Data quality risks:** applies validation before persistence.
+- **Limited historical traceability:** retains raw snapshots in the Bronze layer.
+- **Operational reliability:** uses orchestration, logging, and containerized services to make execution repeatable.
+
+The resulting dataset provides a structured foundation for institutional reporting, performance monitoring, and longitudinal analysis.
+
+## Technology Stack
+
+- **Languages:** Python 3.11, SQL
+- **Data Processing:** Pandas
+- **Database:** MySQL, PostgreSQL
+- **Orchestration:** Apache Airflow
+- **Containerization:** Docker, Docker Compose
+- **Database Integration:** SQLAlchemy
+- **Data Architecture:** Medallion (Bronze & Silver)
+
+## Deployment
+
+The project runs as a containerized local environment using Docker Compose.
+
+The Airflow web interface is available at:
+
+`http://localhost:8080`
+
+The `university_etl` DAG is configured for daily execution and can also be triggered manually.
+
+Refer to the Docker Compose configuration and project source files for service setup and execution details.
 
 ---
 
-## 🚀 Deployment Guide
+**Engineering principle**
 
-To deploy this framework in a local or cloud environment:
+Reliable institutional intelligence begins with reliable data.
 
-### 1. Initialize Environment
-```powershell
-# Clone and enter directory
-cd university_etl
+Automation makes the process repeatable. Validation makes the data trustworthy. Architecture makes it reusable for decision-making.
