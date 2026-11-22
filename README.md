@@ -1,5 +1,4 @@
-
-## Data Integration Pipeline : Python · Docker · Apache Airflow · MySQL · Data Quality
+## Data Integration Pipeline: Python · Docker · Apache Airflow · MySQL · Data Quality
 
 An automated, containerized data pipeline that transforms fragmented institutional data into structured, validated, and reusable datasets.
 
