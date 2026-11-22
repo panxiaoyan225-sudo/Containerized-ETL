@@ -2,7 +2,7 @@
 
 An automated, containerized data pipeline that transforms fragmented institutional data into structured, validated, and reusable datasets.
 
-Designed around a Canadian higher-education use case, this project demonstrates how API ingestion, data-quality enforcement, historical snapshots, and relational persistence can work together to support reliable institutional reporting and longitudinal analysis.
+Designed around a Canadian higher-education use case, demonstrating how API ingestion, data-quality enforcement, historical snapshots, and relational persistence can work together to support reliable institutional reporting and longitudinal analysis.
 
 ## Architecture Overview
 
@@ -127,6 +127,6 @@ Refer to the Docker Compose configuration and project source files for service s
 
 **Engineering principle**
 
-Reliable institutional intelligence begins with reliable data.
+**Reliable intelligence begins with reliable data.**
 
-Automation makes the process repeatable. Validation makes the data trustworthy. Architecture makes it reusable for decision-making.
+**Automation makes the process repeatable. Validation makes the data trustworthy. Architecture makes it reusable for decision-making.**
